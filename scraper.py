@@ -1,6 +1,8 @@
 import requests
 import bs4
 import webbrowser
+import http.cookiejar
+import mechanicalsoup
 
 
 def indeedScraper():
@@ -33,6 +35,25 @@ def linkedinScraper():
               title.text.strip('\t\r\n') + '--' + job['href'] + '--' + location.text)
 
 
+def zipRecruiterScraper():
+    res = requests.get(
+        'https://www.ziprecruiter.com/Jobs/Software-Engineer-Intern/--in-Texas')
+    res.raise_for_status()
+    soup = bs4.BeautifulSoup(res.text, 'html.parser')
+    links = soup.select(
+        '.job_link')
+    titles = soup.select('.title')
+    companies = soup.select('.company_name')
+    locations = soup.select('.company_location')
+    for title, job, comp, location in zip(titles, links, companies, locations):
+        if 'Software' in title.text:
+            print(comp.text.strip() + '--' +
+                  title.text.strip('\t\r\n') + '--' + job['href'] + '--' + location.text.strip())
+
+
 if __name__ == "__main__":
     indeedScraper()
-    # linkedinScraper()
+    print('\n')
+    linkedinScraper()
+    print('\n')
+    zipRecruiterScraper()
