@@ -2,7 +2,9 @@ import requests
 import bs4
 import webbrowser
 import http.cookiejar
-import mechanicalsoup
+from mailjobs import *
+
+wrapper = "<p> %s: <a href=\"%s\">%s</a> at %s </p>"
 
 
 def indeedScraper():
@@ -13,9 +15,16 @@ def indeedScraper():
     links = soup.select('.jobsearch-SerpJobCard > .title > a')
     companies = soup.select('.company')
     locations = soup.select('.location')
+    finalText = """<!DOCTYPE html>
+    <html lang="en">
+    <body>
+    <h1 color="white">Indeed</h1> """
+
     for comp, job, location in zip(companies, links, locations):
-        print(comp.text.strip('\t\r\n') + '--' + job['title'] +
-              '--' + 'https://indeed.com'+job['href'] + '--' + location.text)
+        finalText += wrapper % (comp.text.strip('\t\r\n'),
+                                'https://indeed.com'+job['href'], job['title'], location.text)
+    finalText += "</body></html>"
+    return finalText
 
 
 def linkedinScraper():
@@ -30,9 +39,17 @@ def linkedinScraper():
         '.job-result-card__subtitle-link')
     locations = soup.select(
         '.job-result-card__location')
+    finalText = """<!DOCTYPE html>
+    <html lang="en">
+    <body>
+    <h1 color="white">LinkedIn</h1> """
     for title, job, comp, location in zip(titles, links, companies, locations):
-        print(comp.text.strip('\t\r\n') + '--' +
-              title.text.strip('\t\r\n') + '--' + job['href'] + '--' + location.text)
+        finalText += wrapper % (comp.text.strip('\t\r\n'),
+                                job['href'], title.text.strip('\t\r\n'), location.text)
+        """ finalText += (comp.text.strip('\t\r\n') + '--' +
+                      title.text.strip('\t\r\n') + '--' + job['href'] + '--' + location.text + '\n') """
+    finalText += "</body></html>"
+    return finalText
 
 
 def zipRecruiterScraper():
@@ -45,15 +62,19 @@ def zipRecruiterScraper():
     titles = soup.select('.title')
     companies = soup.select('.company_name')
     locations = soup.select('.company_location')
+    finalText = """<!DOCTYPE html>
+    <html lang="en">
+    <body>
+    <h1 color="white">ZipRecruiter</h1> """
     for title, job, comp, location in zip(titles, links, companies, locations):
         if 'Software' in title.text:
-            print(comp.text.strip() + '--' +
-                  title.text.strip('\t\r\n') + '--' + job['href'] + '--' + location.text.strip())
+            finalText += wrapper % (comp.text.strip(),
+                                    job['href'], title.text.strip('\t\r\n'), location.text.strip())
+            """ finalText += (comp.text.strip() + '--' +
+                          title.text.strip('\t\r\n') + '--' + job['href'] + '--' + location.text.strip() + '\n') """
+    finalText += "</body></html>"
+    return finalText
 
 
 if __name__ == "__main__":
-    indeedScraper()
-    print('\n')
-    linkedinScraper()
-    print('\n')
-    zipRecruiterScraper()
+    mailToMe(indeedScraper() + linkedinScraper() + zipRecruiterScraper())

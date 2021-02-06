@@ -1,2 +1,5 @@
 /venv
 .vscode
+secrets.py
+__pycache__/mailjobs.cpython-37.pyc
+__pycache__/secrets.cpython-37.pyc
